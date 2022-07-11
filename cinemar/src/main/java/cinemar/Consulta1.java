@@ -1,4 +1,4 @@
-//CONSULTA: TODAS LAS SESIONES DE LA SEMANA. TIENE DATOS DE VARIAS TABLAS
+//usuarios registrados en 2021
 
 package cinemar;
 
@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 import org.apache.log4j.PropertyConfigurator;
 import org.json.JSONException;
 
-public class toBDD {
+public class Consulta1 {
 
 	static final String JDBC_DRIVER= "com.mysql.cj.jdbc.Driver";
 	static final String DB_URL= "jdbc:mysql://localhost:3306/cinemar2";
@@ -31,7 +31,7 @@ public static void main(String args[]) {
 		Statement stmt = null;
 		JSONObject jo = new JSONObject();
 		
-		 ArrayList <Sesion_alt> sesiones = new ArrayList();
+		 ArrayList <Cliente> clientes = new ArrayList();
 		
 		try{
 		 //PASO 2: Registrar JDBC driver
@@ -45,14 +45,9 @@ public static void main(String args[]) {
 		 System.out.println("Creando consulta");
 		 stmt = conn.createStatement();
 		 String sql;
-			sql = "SELECT cinemar2.sesión.idSESIÓN,día,hora,precio,\r\n"
-					+ "cinemar2.película.título,`duración(min)`,\r\n"
-					+ "cinemar2.descuento.descuento,\r\n"
-					+ "cinemar2.sala.idSALA,tipo\r\n"
-					+ "FROM cinemar2.sesión INNER JOIN cinemar2.película INNER JOIN cinemar2.descuento INNER JOIN cinemar2.sala\r\n"
-					+ "ON cinemar2.sesión.película_idPELÍCULA=cinemar2.película.idPELÍCULA\r\n"
-					+ "AND cinemar2.sesión.descuento_idDESCUENTO=cinemar2.descuento.idDESCUENTO\r\n"
-					+ "AND cinemar2.sala.sesión_idSESIÓN=cinemar2.sesión.idSESIÓN;";
+			sql = "SELECT cinemar2.usuario.numUSUARIO,nombre,apellido , cinemar2.cliente.idCLIENTE,fechaRegistro\r\n"
+					+ " FROM cinemar2.cliente INNER JOIN cinemar2.usuario WHERE fechaRegistro LIKE '2021%' AND \r\n"
+					+ " cinemar2.usuario.numUSUARIO=cinemar2.cliente.usuario_numUSUARIO;";
 		 
 		 ResultSet rs = stmt.executeQuery(sql);
 		 
@@ -63,23 +58,17 @@ public static void main(String args[]) {
 				while(rs.next())
 				{		 
 					//Recibir por tipo de columna BDD USUARIOS
-					int id_sesion = rs.getInt("idSESIÓN");
-					String dia = rs.getString("día");
-					Time hora= rs.getTime("hora"); 
-					String peli= rs.getString("título");
-					String tipo=rs.getString("tipo");
-					int duracion= rs.getInt("duración(min)");
-					Double precio =rs.getDouble("precio");
-					Float descuento=rs.getFloat("descuento");
-					String id_sala=rs.getString("idSALA");
-			
-					Double precio_final=(1.0-descuento)*precio;
-				
-					BigDecimal bd = new BigDecimal(precio_final);
-					bd= bd.setScale(2,RoundingMode.HALF_UP);
-					Sesion_alt sesion = new Sesion_alt(id_sesion,dia,hora,peli,duracion,bd,descuento,id_sala,tipo);
+					int num_usuario = rs.getInt("numUSUARIO");
+					String nombre = rs.getString("nombre"); 
+					String apellido= rs.getString("apellido");
+					String id=rs.getString("idCLIENTE");
+					Date fecha_r= rs.getDate("fechaRegistro");				
 					
-					sesiones.add(sesion);
+					Cliente cliente = new Cliente();
+					cliente.setId_Usuario(id); cliente.setNombre(nombre);cliente.setApellido(apellido);cliente.setFecha_registro(fecha_r);
+
+					
+					clientes.add(cliente);
 				}
 		
 		//PASO6: Entorno de Limpieza
@@ -109,8 +98,8 @@ public static void main(String args[]) {
 		
 		  String log4jConfPath = "C:/Users/nico_/OneDrive/Escritorio/CURSO 1000 PROGRAMADORES/CinemarSARDINA/cinemar/to/log4j.properties";
 		   PropertyConfigurator.configure(log4jConfPath);
-	       port(8900);
-	       String json= new Gson().toJson(sesiones);
+	       port(9098);
+	       String json= new Gson().toJson(clientes);
 	      get("/consulta", (req,res) -> json);
 		 System.out.println("Goodbye!");
 		 
@@ -119,5 +108,4 @@ public static void main(String args[]) {
 } // cierra clase
 		 
 		 
-
 
