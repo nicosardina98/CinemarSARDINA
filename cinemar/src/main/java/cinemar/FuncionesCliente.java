@@ -35,25 +35,14 @@ public class FuncionesCliente {
 	private Reserva reserva;
 	private Tarjeta tarjeta;
 	private static Cliente Cliente_que_opera;
-	private static ArrayList <Usuario> usuarios_cinemar = new ArrayList <Usuario>();
-	private static ArrayList <Cliente> clientes_cinemar = new ArrayList <Cliente>();
-	private static ArrayList<Butacas> butacas_sala= new ArrayList <Butacas>();
-	private static ArrayList <Sesion_alt> sesiones_cinemar = new ArrayList <Sesion_alt>();
-	private static ArrayList <Reserva_alt> reservas_cinemar= new ArrayList <Reserva_alt>();
+	private static ArrayList <Usuario> usuarios = new ArrayList <Usuario>();
+	private static ArrayList <Cliente> clientes = new ArrayList <Cliente>();
+	private static ArrayList<Butacas> butacas= new ArrayList <Butacas>();
+	private static ArrayList <Sesion_alt> sesiones = new ArrayList <Sesion_alt>();
+	private static ArrayList <Reserva_alt> reservas= new ArrayList <Reserva_alt>();
 	private static ArrayList <Reserva_alt> mis_reservas= new ArrayList <Reserva_alt>();
 	
-public static ArrayList<Usuario> getUsuarios_cinemar() {
-		return usuarios_cinemar;
-	}
-	public static void setUsuarios_cinemar(ArrayList<Usuario> usuarios_cinemar) {
-		FuncionesCliente.usuarios_cinemar = usuarios_cinemar;
-	}
-	public static ArrayList<Cliente> getClientes_cinemar() {
-		return clientes_cinemar;
-	}
-	public static void setClientes_cinemar(ArrayList<Cliente> clientes_cinemar) {
-		FuncionesCliente.clientes_cinemar = clientes_cinemar;
-	}
+
 public Cliente getCliente_que_opera() {
 		return Cliente_que_opera;
 	}
@@ -77,9 +66,8 @@ public FuncionesCliente()
 {
 }
 
-public static void Cargar_usuarios()
+public static void Cargar_usuarios(ArrayList <Usuario> usuarios_cinemar)
 {
-	
 	//PARTE A-1: CARGO LAS BASE DE DATOS "USUARIO"
 	try
 	{
@@ -109,7 +97,9 @@ public static void Cargar_usuarios()
 			//Creo un nuevo usuario con los datos extraidos de la base de datos y lo agrego en un ArrayList
 			Usuario usuario=new Usuario (nombre,apellido,fecha_n,celular,email,rolU);
 			usuarios_cinemar.add(usuario);
-				 	}
+		}
+		
+		usuarios=usuarios_cinemar;
 				 
 			//Entorno de Limpieza
 			rs.close();
@@ -151,8 +141,10 @@ public static void Cargar_usuarios()
 }
 
 
-public static void Cargar_clientes()
+public static void Cargar_clientes(ArrayList <Cliente> clientes_cinemar)
 {
+
+	
 	//PARTE A-1: CARGO LAS BASE DE DATOS "USUARIO"
 	try
 	{
@@ -196,6 +188,8 @@ public static void Cargar_clientes()
 			Cliente cliente= new Cliente (nombre,apellido,fecha_n,celular,email,rolU,id,contraseña,fecha_r);
 			clientes_cinemar.add(cliente);
 		}
+		
+		clientes=clientes_cinemar;
 				 
 			//Entorno de Limpieza
 			rs.close();
@@ -245,8 +239,8 @@ public static boolean Registrarse()
 	
 		
 	//PARTE A:CARGO BASE DE DATOS CLIENTES
-	Cargar_clientes();
-	Cargar_usuarios();
+	Cargar_clientes(clientes);
+	Cargar_usuarios(usuarios);
 	//PARTE B-1: NUEVO USUARIO EN LA BASE DE DATOS DE USUARIOS
 				
 	Cliente cliente = new Cliente();
@@ -353,7 +347,7 @@ public static boolean Registrarse()
 				
 	//Carga de datos por columna
 	ps=conn.prepareStatement("INSERT INTO usuario VALUES (?, ?, ?, ?, ?, ?, ?)");
-	ps.setInt(1, usuarios_cinemar.size()+1);
+	ps.setInt(1, usuarios.size()+1);
 	ps.setString(2,cliente.getNombre());
 	ps.setString(3,cliente.getApellido());
 	ps.setDate(4,cliente.getFecha_nacimiento());
@@ -370,7 +364,7 @@ public static boolean Registrarse()
 	conn.close();
 					
 	//Agrego el usuario en el arreglo precreado
-	usuarios_cinemar.add(cliente);
+	usuarios.add(cliente);
 					
 	}catch(ClassNotFoundException ce)
 	{
@@ -415,9 +409,9 @@ public static boolean Registrarse()
 	}
 	
 	//VERIFICAR QUE LA ID NO SE REPITA
-	for (int i=0; i<clientes_cinemar.size();i++)
+	for (int i=0; i<clientes.size();i++)
 	{
-			while(clientes_cinemar.get(i).getId_Usuario().equals(cliente.getId_Usuario()))
+			while(clientes.get(i).getId_Usuario().equals(cliente.getId_Usuario()))
 		{
 			System.err.print("Ya existe un Usuario con esa Id. Ingrese otra: ");
 			cliente.setId_Usuario(entrada.nextLine());
@@ -495,7 +489,7 @@ public static boolean Registrarse()
 	if(registro)
 	{
 		//Agrego el usuario en el arreglo precreado
-		clientes_cinemar.add(cliente);
+		clientes.add(cliente);
 		System.out.println( cliente.getId_Usuario()+ " se ha registrado con éxito el " + cliente.getFecha_registro());
 		Cliente_que_opera= cliente;
 
@@ -510,11 +504,11 @@ public static boolean Registrarse()
 					
 		//Carga de datos por columna
 		ps=conn.prepareStatement("INSERT INTO cliente VALUES (?, ?, ?, ?, ?)");
-		ps.setInt(1, clientes_cinemar.size());
+		ps.setInt(1, clientes.size());
 		ps.setString(2,cliente.getId_Usuario());
 		ps.setString(3,cliente.getContraseña());
 		ps.setDate(4,cliente.getFecha_registro());
-		ps.setInt(5,usuarios_cinemar.size());
+		ps.setInt(5,usuarios.size());
 
 						
 		//Ejecuta la carga
@@ -566,7 +560,7 @@ public static boolean Inicio_Sesion()
 	Scanner entrada= new Scanner (System.in);
 	
 	//Cargo la base de datos en un ArrayList
-	Cargar_clientes();
+	Cargar_clientes(clientes);
 	
 	System.out.print("Ingrese su ID: ");
 	String id= entrada.nextLine();
@@ -581,19 +575,19 @@ public static boolean Inicio_Sesion()
 	int intentos=3;
 	int i_que_opera=-1; 
 	
-	while (posicion<=clientes_cinemar.size())
+	while (posicion<=clientes.size())
 	{
-		for (int i=0; i<clientes_cinemar.size(); i++)
+		for (int i=0; i<clientes.size(); i++)
 		{
 			posicion++;
 			
-			String id_bdd= clientes_cinemar.get(i).getId_Usuario();
-			String contraseña_bdd= clientes_cinemar.get(i).getContraseña();
+			String id_bdd= clientes.get(i).getId_Usuario();
+			String contraseña_bdd= clientes.get(i).getContraseña();
 			
 			if(id.equals(id_bdd) && contraseña.equals(contraseña_bdd))
 			{
-				System.out.print("Sesión iniciada correctamente. Hola " + clientes_cinemar.get(i).getNombre()+ " ");
-				System.out.println(clientes_cinemar.get(i).getApellido());
+				System.out.print("Sesión iniciada correctamente. Hola " + clientes.get(i).getNombre()+ " ");
+				System.out.println(clientes.get(i).getApellido());
 				inicio=true;
 				posicion--;
 				i_que_opera=i;
@@ -615,8 +609,8 @@ public static boolean Inicio_Sesion()
 					{
 						i++;
 						inicio=true;
-						System.out.print("Sesión iniciada correctamente. Hola " + clientes_cinemar.get(i).getNombre()+ " ");
-						System.out.println(clientes_cinemar.get(i).getApellido());
+						System.out.print("Sesión iniciada correctamente. Hola " + clientes.get(i).getNombre()+ " ");
+						System.out.println(clientes.get(i).getApellido());
 						i_que_opera=i;
 						break;
 					}
@@ -629,7 +623,7 @@ public static boolean Inicio_Sesion()
 				}
 		}
 		
-		if(posicion==clientes_cinemar.size())
+		if(posicion==clientes.size())
 			{
 				System.err.println("Error. El usuario "+ id +" no existe");
 				
@@ -642,7 +636,7 @@ public static boolean Inicio_Sesion()
 				
 				posicion=0;;
 			}
-		else if(posicion<clientes_cinemar.size())
+		else if(posicion<clientes.size())
 		{
 			break;
 		}
@@ -656,7 +650,7 @@ public static boolean Inicio_Sesion()
 	
 	if(inicio)
 	{
-		Cliente_que_opera= clientes_cinemar.get(i_que_opera);
+		Cliente_que_opera= clientes.get(i_que_opera);
 		
 	}
 	
@@ -664,12 +658,136 @@ public static boolean Inicio_Sesion()
 	return inicio;
 }
 
-public static void Reservar()
-
-
+public static void Cargar_butacas (ArrayList <Butacas> butacas_sala,String Id_sala)
 {
-	@SuppressWarnings("resource")
-	Scanner entrada= new Scanner(System.in);
+//	sesion_elegida.getId_sala()
+	try
+	{
+		//Registrar JDBC driver
+		Class.forName(JDBC_DRIVER);
+				 
+		// Abrir una Conexion
+		conn = DriverManager.getConnection(DB_URL,USER,PASS);
+				 
+		// Ejecutar una accion en SQL
+		stmt = conn.createStatement();
+		String sql;
+		sql = "SELECT * FROM cinemar2.butaca WHERE cinemar2.butaca.sala_idSALA LIKE '"+ Id_sala+"';";
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		//Extraer datos del ResultSet
+		while(rs.next())
+		{		 
+			//Recibir por tipo de columna BDD USUARIOS
+			String id_butaca=rs.getString("idBUTACA");
+			String fila = rs.getString("fila");
+			int numero =rs.getInt("numero");
+			String id_sala=rs.getString("sala_idSALA");
+			String estado= rs.getString("reservada");
+		
+			Butacas butaca= new Butacas(id_butaca, fila, numero,estado,id_sala);
+			butacas_sala.add(butaca);
+			
+		}
+		
+
+		
+		
+		//Entorno de Limpieza
+		rs.close();
+		stmt.close();
+		conn.close();
+		}catch(SQLException se){
+			// Resolver errores para JDBC
+			se.printStackTrace();
+		}catch(Exception e){
+			// Resolver errores para Class.forName
+			e.printStackTrace();
+		}finally{
+			// Bloque finalmente utilizado para cerrar recursos
+			try{
+				if(stmt!=null)
+					stmt.close();
+			}catch(SQLException se2){
+			}// Nada que podamos hacer
+			try{
+				if(conn!=null)
+					conn.close();
+			}catch(SQLException se){
+			 se.printStackTrace();
+			 }
+		} 
+}
+
+public static void Cargar_reservas(ArrayList <Reserva_alt> reservas_cinemar)
+{
+	if(reservas_cinemar.size()>0)
+	{
+		reservas_cinemar.clear();
+	}
+	
+	//CARGAR RESERVAS
+	try
+	{
+		//Registrar JDBC driver
+		Class.forName(JDBC_DRIVER);
+				 
+		// Abrir una Conexion
+		conn = DriverManager.getConnection(DB_URL,USER,PASS);
+				 
+		// Ejecutar una accion en SQL
+		stmt = conn.createStatement();
+		String sql;
+		sql = "SELECT * FROM cinemar2.reserva;";
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		//Extraer datos del ResultSet
+		while(rs.next())
+		{		 
+			//Recibir por tipo de columna BDD USUARIOS
+			int num_reserva = rs.getInt("numRESERVA");
+			String id_reserva = rs.getString("idRESERVA");
+			String id_cliente = rs.getString("cliente_idCLIENTE"); 
+			String id_butaca= rs.getString("butaca_idBUTACA");
+
+			Reserva_alt reserva = new Reserva_alt(num_reserva, id_reserva, id_cliente,id_butaca);
+			reservas_cinemar.add(reserva);
+		}
+		
+		
+		System.out.println()	;
+		
+			//Entorno de Limpieza
+			rs.close();
+			stmt.close();
+			conn.close();
+			}catch(SQLException se){
+				// Resolver errores para JDBC
+				se.printStackTrace();
+			}catch(Exception e){
+				// Resolver errores para Class.forName
+				e.printStackTrace();
+			}finally{
+				// Bloque finalmente utilizado para cerrar recursos
+				try{
+					if(stmt!=null)
+						stmt.close();
+				}catch(SQLException se2){
+				}// Nada que podamos hacer
+				try{
+					if(conn!=null)
+						conn.close();
+				}catch(SQLException se){
+				 se.printStackTrace();
+				 }
+			} 
+	
+}
+
+public static void Ver_sesiones(ArrayList <Sesion_alt> sesiones_cinemar)
+{
 	
 	
 	//PARTE A-1: CARGO LAS BASE DE DATOS
@@ -740,6 +858,8 @@ public static void Reservar()
 				}
 			}
 			
+			sesiones=sesiones_cinemar;
+			
 			for(int i=0; i<sesiones_cinemar.size();i++)
 			{
 				System.out.println()	;
@@ -751,6 +871,7 @@ public static void Reservar()
 				System.out.print(sesiones_cinemar.get(i).getDuracion()+" min) ");
 				System.out.print(sesiones_cinemar.get(i).getTipo()+" ");
 			}
+			
 			
 			
 			System.out.println()	;
@@ -779,10 +900,18 @@ public static void Reservar()
 					 se.printStackTrace();
 					 }
 				} 
+}
+
+public static void Reservar(ArrayList <Butacas> butacas_sala,ArrayList <Reserva_alt> reservas_cinemar)
+
+{
+		Ver_sesiones(sesiones);
+		@SuppressWarnings("resource")
+		Scanner entrada= new Scanner(System.in);
 		
-		String n= sesiones_cinemar.size()-10+"";
+		String n= sesiones.size()-10+"";
 		char n0=n.charAt(0);
-		String regex="^(?:[1-9]|[1-"+n0+"][0-9]|"+sesiones_cinemar.size()+")$";
+		String regex="^(?:[1-9]|[1-"+n0+"][0-9]|"+sesiones.size()+")$";
 		
 		System.out.println("Ingrese el número de sesión que desea reservar");
 		String navegador= entrada.nextLine();
@@ -790,7 +919,7 @@ public static void Reservar()
 		
 		int id_sesion_elegida= Integer.parseInt(navegador);
 		int indice = id_sesion_elegida-1;
-		Sesion_alt sesion_elegida = sesiones_cinemar.get(indice);
+		Sesion_alt sesion_elegida = sesiones.get(indice);
 		
 		System.out.println();
 		System.out.print("Usted seleccionó reservar la Sesión N° "+sesion_elegida.getId() );
@@ -894,110 +1023,55 @@ public static void Reservar()
 			System.out.println("A continuación, se muestran las butacas disponibles en la sala ");
 			System.out.println("Aclaración. si= butaca reservada \t no= butaca no reservada/disponible");
 			
-//			sesion_elegida.getId_sala()
-			try
+			Cargar_butacas(butacas,sesion_elegida.getId_sala());
+			for (int i=0; i<butacas.size();i++)
 			{
-				//Registrar JDBC driver
-				Class.forName(JDBC_DRIVER);
-						 
-				// Abrir una Conexion
-				conn = DriverManager.getConnection(DB_URL,USER,PASS);
-						 
-				// Ejecutar una accion en SQL
-				stmt = conn.createStatement();
-				String sql;
-				sql = "SELECT * FROM cinemar2.butaca WHERE cinemar2.butaca.sala_idSALA LIKE '"+ sesion_elegida.getId_sala()+"';";
-				
-				ResultSet rs = stmt.executeQuery(sql);
-				
-				//Extraer datos del ResultSet
-				while(rs.next())
-				{		 
-					//Recibir por tipo de columna BDD USUARIOS
-					String id_butaca=rs.getString("idBUTACA");
-					String fila = rs.getString("fila");
-					int numero =rs.getInt("numero");
-					String id_sala=rs.getString("sala_idSALA");
-					String estado= rs.getString("reservada");
-				
-					Butacas butaca= new Butacas(id_butaca, fila, numero,estado,id_sala);
-					butacas_sala.add(butaca);
-					
-				}
-
-				for (int i=0; i<butacas_sala.size();i++)
+				if(butacas.get(i).getFila().equals("A")&&butacas.get(i).getNumero()==1)
 				{
-					if(butacas_sala.get(i).getFila().equals("A")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("B")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("C")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("D")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("E")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("F")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("G")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("H")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("I")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					if(butacas_sala.get(i).getFila().equals("J")&&butacas_sala.get(i).getNumero()==1)
-					{
-						System.out.println();
-					}
-					System.out.print("    \t");
-					System.out.print(butacas_sala.get(i).getFila()+butacas_sala.get(i).getNumero()+" ("+ butacas_sala.get(i).getReservada()+")");
-					
-					
+					System.out.println();
 				}
+				if(butacas.get(i).getFila().equals("B")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("C")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("D")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("E")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("F")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("G")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("H")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("I")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				if(butacas.get(i).getFila().equals("J")&&butacas.get(i).getNumero()==1)
+				{
+					System.out.println();
+				}
+				System.out.print("    \t");
+				System.out.print(butacas.get(i).getFila()+butacas.get(i).getNumero()+" ("+ butacas.get(i).getReservada()+")");
 				
 				
-				//Entorno de Limpieza
-				rs.close();
-				stmt.close();
-				conn.close();
-				}catch(SQLException se){
-					// Resolver errores para JDBC
-					se.printStackTrace();
-				}catch(Exception e){
-					// Resolver errores para Class.forName
-					e.printStackTrace();
-				}finally{
-					// Bloque finalmente utilizado para cerrar recursos
-					try{
-						if(stmt!=null)
-							stmt.close();
-					}catch(SQLException se2){
-					}// Nada que podamos hacer
-					try{
-						if(conn!=null)
-							conn.close();
-					}catch(SQLException se){
-					 se.printStackTrace();
-					 }
-				} 
+			}
+			
 			
 			System.out.println();
 			System.out.println();
@@ -1081,7 +1155,6 @@ public static void Reservar()
 				
 			}
 			
-		System.out.println(butaca_elegida.getCodigo());
 		System.out.println("¿Qué desea hacer?");
 		System.out.println("1. Confirmar la reserva");
 		System.out.println("2. Volver al Menú");
@@ -1109,7 +1182,12 @@ public static void Reservar()
 				ps.close();
 				conn.close();
 								
-								
+				butaca_elegida.setReservada("si");	
+				
+				butacas.set(posicion, butaca_elegida);
+				
+//				butacas=butacas_sala;
+				
 				}catch(ClassNotFoundException ce)
 				{
 					ce.printStackTrace();
@@ -1137,61 +1215,7 @@ public static void Reservar()
 				} 		
 				
 			//CARGAR RESERVAS
-			try
-			{
-				//Registrar JDBC driver
-				Class.forName(JDBC_DRIVER);
-						 
-				// Abrir una Conexion
-				conn = DriverManager.getConnection(DB_URL,USER,PASS);
-						 
-				// Ejecutar una accion en SQL
-				stmt = conn.createStatement();
-				String sql;
-				sql = "SELECT * FROM cinemar2.reserva;";
-				
-				ResultSet rs = stmt.executeQuery(sql);
-				
-				//Extraer datos del ResultSet
-				while(rs.next())
-				{		 
-					//Recibir por tipo de columna BDD USUARIOS
-					int num_reserva = rs.getInt("numRESERVA");
-					String id_reserva = rs.getString("idRESERVA");
-					String id_cliente = rs.getString("cliente_idCLIENTE"); 
-					String id_butaca= rs.getString("butaca_idBUTACA");
-		
-					Reserva_alt reserva = new Reserva_alt(num_reserva, id_reserva, id_cliente,id_butaca);
-					reservas_cinemar.add(reserva);
-				}
-				
-				System.out.println()	;
-				
-					//Entorno de Limpieza
-					rs.close();
-					stmt.close();
-					conn.close();
-					}catch(SQLException se){
-						// Resolver errores para JDBC
-						se.printStackTrace();
-					}catch(Exception e){
-						// Resolver errores para Class.forName
-						e.printStackTrace();
-					}finally{
-						// Bloque finalmente utilizado para cerrar recursos
-						try{
-							if(stmt!=null)
-								stmt.close();
-						}catch(SQLException se2){
-						}// Nada que podamos hacer
-						try{
-							if(conn!=null)
-								conn.close();
-						}catch(SQLException se){
-						 se.printStackTrace();
-						 }
-					} 
-			
+			Cargar_reservas(reservas_cinemar);
 			
 			String fecha_string="";
 			//AÑADIR A LA BASE DE DATOS "RESERVA"
@@ -1231,6 +1255,10 @@ public static void Reservar()
 			}
 			
 			String codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+		
+			int num_reserva_nueva = reservas_cinemar.get(reservas_cinemar.size()-1).getNum_reserva()+1;
+		
+			
 			try{
 				
 				//Registrar JDBC driver
@@ -1241,7 +1269,7 @@ public static void Reservar()
 							
 				//Carga de datos por columna
 				ps=conn.prepareStatement("INSERT INTO reserva VALUES (?, ?, ?, ? )");
-				ps.setInt(1, reservas_cinemar.size()+1);
+				ps.setInt(1, num_reserva_nueva);
 				ps.setString(2,codigo_reserva);
 				ps.setString(3,Cliente_que_opera.getId_Usuario());
 				ps.setString(4,butaca_elegida.getCodigo());
@@ -1253,12 +1281,15 @@ public static void Reservar()
 				
 				ps.close();
 				conn.close();
+		
 				
-				Reserva_alt reserva = new Reserva_alt(reservas_cinemar.size()+1, codigo_reserva, Cliente_que_opera.getId_Usuario(),butaca_elegida.getCodigo());
+				Reserva_alt reserva = new Reserva_alt(num_reserva_nueva, codigo_reserva, Cliente_que_opera.getId_Usuario(),butaca_elegida.getCodigo());
 								
+			
 				//Agrego el usuario en el arreglo precreado
 				reservas_cinemar.add(reserva);
 			
+				
 				}catch(ClassNotFoundException ce)
 				{
 					ce.printStackTrace();
@@ -1285,6 +1316,11 @@ public static void Reservar()
 						}
 				} 
 			
+			
+			System.out.println("La reserva se realizó con exito. Reserva N° : " + reservas_cinemar.get(reservas_cinemar.size()-1).getNum_reserva()+" . Codigo " + reservas.get(reservas.size()-1).getId_reserva() );
+			
+			Menu_cl();
+			
 		}
 		else if(navegador.equals("2"))
 		{
@@ -1296,12 +1332,17 @@ public static void Reservar()
 }
 			
 
-public static void Ver_misReservas()
-
+public static void Ver_misReservas(ArrayList <Reserva_alt> mis_reservas_cinemar)
 
 
 {
-	//PARTE A-1: CARGO LAS BASE DE DATOS "USUARIO"
+	
+	if(mis_reservas_cinemar.size()>0 && mis_reservas_cinemar.get(0).equals(mis_reservas_cinemar.get(1)))
+	{
+		mis_reservas_cinemar.clear();
+	}
+//	ArrayList <Reserva_alt> mis_reservas_cinemar = new ArrayList <Reserva_alt> ();
+
 	try
 	{
 		//Registrar JDBC driver
@@ -1347,10 +1388,20 @@ public static void Ver_misReservas()
 			
 			Reserva_alt mi_reserva = new Reserva_alt(id_sesion,dia,hora,peli,tipo,num_sala,id_sala,id_butaca,fila,numero,id_reserva,num_reserva);
 			
-			mis_reservas.add(mi_reserva);
+			mis_reservas_cinemar.add(mi_reserva);
 	
 		}
 		
+		if (mis_reservas_cinemar.size()==0)
+		{
+			System.out.println("Usted no tiene reservas!");
+			System.out.println("Pruebe con otra opcion: ");
+			Menu_cl();
+		}
+		
+		else
+		
+				
 			//Entorno de Limpieza
 			rs.close();
 			stmt.close();
@@ -1377,17 +1428,17 @@ public static void Ver_misReservas()
 			}
 	
 	//ORDENAMOS LAS SESIONES
-	for(int i=0; i<(mis_reservas.size()-2);i++)
+	for(int i=0; i<(mis_reservas_cinemar.size()-2);i++)
 	{
 		
-		for(int j= i+1;j<(mis_reservas.size()-1);j++ )
+		for(int j= i+1;j<(mis_reservas_cinemar.size()-1);j++ )
 		{
-			if (mis_reservas.get(i).getId_sesion()>mis_reservas.get(j).getId_sesion())
+			if (mis_reservas.get(i).getId_sesion()>mis_reservas_cinemar.get(j).getId_sesion())
 			{
-				Reserva_alt reserva_aux1= mis_reservas.get(i);
-				Reserva_alt reserva_aux2= mis_reservas.get(j);
-				mis_reservas.set(i, reserva_aux2);
-				mis_reservas.set(j, reserva_aux1);
+				Reserva_alt reserva_aux1= mis_reservas_cinemar.get(i);
+				Reserva_alt reserva_aux2= mis_reservas_cinemar.get(j);
+				mis_reservas_cinemar.set(i, reserva_aux2);
+				mis_reservas_cinemar.set(j, reserva_aux1);
 				j=i+1;
 			
 			}
@@ -1398,18 +1449,20 @@ public static void Ver_misReservas()
 		}
 	}
 	
+
+	
 	System.out.println("Para esta semana usted reservó:");
-	for(int i=0; i<mis_reservas.size();i++)
+	for(int i=0; i<mis_reservas_cinemar.size();i++)
 	{
 		System.out.println();
 		System.out.print((i+1)+". ");
-		System.out.print(mis_reservas.get(i).getDia()+"  ");
-		System.out.print(mis_reservas.get(i).getHora()+"  ");
-		System.out.print(mis_reservas.get(i).getPeli()+" (");
-		System.out.print(mis_reservas.get(i).getTipo()+")  Sala ");
-		System.out.print(mis_reservas.get(i).getNum_sala()+" Butaca:  ");
-		System.out.print(mis_reservas.get(i).getFila()+"");
-		System.out.print(mis_reservas.get(i).getNumero()+"");
+		System.out.print(mis_reservas_cinemar.get(i).getDia()+"  ");
+		System.out.print(mis_reservas_cinemar.get(i).getHora()+"  ");
+		System.out.print(mis_reservas_cinemar.get(i).getPeli()+" (");
+		System.out.print(mis_reservas_cinemar.get(i).getTipo()+")  Sala ");
+		System.out.print(mis_reservas_cinemar.get(i).getNum_sala()+" Butaca:  ");
+		System.out.print(mis_reservas_cinemar.get(i).getFila()+"");
+		System.out.print(mis_reservas_cinemar.get(i).getNumero()+"");
 
 	}
 	
@@ -1417,9 +1470,7 @@ public static void Ver_misReservas()
 }
 
 
-
-
-public static void Modificar_reserva()
+public static void Modificar_reserva(ArrayList <Reserva_alt> mis_reservas, ArrayList <Butacas> butacas)
 {
 	System.out.println();
 	System.out.println("Espere un momento...");
@@ -1427,7 +1478,7 @@ public static void Modificar_reserva()
 
 	@SuppressWarnings("resource")
 	Scanner entrada = new Scanner (System.in);
-	Ver_misReservas();
+	Ver_misReservas(mis_reservas);
 	System.out.println();
 	System.out.println();
 	
@@ -1462,15 +1513,9 @@ public static void Modificar_reserva()
 			}
 		}
 	
-	int indice = opcion-1;
-	Reserva_alt reserva_modificar = mis_reservas.get(indice);
-	
-//	System.out.println(reserva_modificar.getDia());
-//	System.out.println(reserva_modificar.getHora());
-//	System.out.println(reserva_modificar.getPeli());
-//	System.out.println(reserva_modificar.getTipo());
-//	System.out.println(reserva_modificar.getNum_sala());
-//	System.out.println(reserva_modificar.getFila()+reserva_modificar.getNumero());
+	int indice_reserva = opcion-1;
+	Reserva_alt reserva_modificar = mis_reservas.get(indice_reserva);	
+	Cargar_butacas(butacas,reserva_modificar.getId_sala());
 	
 	System.out.print("Está a punto de modificar la reserva N° "+ reserva_modificar.getNum_reserva());
 	System.out.println("   de ID = "+reserva_modificar.getId_reserva()+".");
@@ -1502,7 +1547,8 @@ public static void Modificar_reserva()
 			ps.close();
 			conn.close();
 							
-							
+			mis_reservas.remove(indice_reserva);
+			
 			}catch(ClassNotFoundException ce)
 			{
 				ce.printStackTrace();
@@ -1548,8 +1594,19 @@ public static void Modificar_reserva()
 			ps.executeUpdate();
 			ps.close();
 			conn.close();
-							
-							
+		
+			int indice_butaca=-1;
+			
+			for(int i=0;i<butacas.size();i++)
+			{
+				if(butacas.get(i).getCodigo().equals(reserva_modificar.getId_butaca()))
+				{
+					indice_butaca=i;
+				}
+			}
+			
+			butacas.get(indice_butaca).setReservada("no");
+			
 			}catch(ClassNotFoundException ce)
 			{
 				ce.printStackTrace();
@@ -1576,7 +1633,53 @@ public static void Modificar_reserva()
 					}
 			} 
 		
+		
+//		try
+//		{
+//			//Registrar JDBC driver
+//			Class.forName(JDBC_DRIVER);
+//					 
+//			// Abrir una Conexion
+//			conn = DriverManager.getConnection(DB_URL,USER,PASS);
+//					 
+//			// Ejecutar una accion en SQL
+//			stmt = conn.createStatement();
+//			String sql;
+//			sql = "SELECT * FROM cinemar2.butaca WHERE cinemar2.butaca.sala_idSALA LIKE '"+ reserva_modificar.getId_sala()+"';";
+//			
+//			ResultSet rs = stmt.executeQuery(sql);
+//			
+//			//Extraer datos del ResultSet
+//			while(rs.next())
+//			{		 
+//				//Recibir por tipo de columna BDD USUARIOS
+//				String id_butaca=rs.getString("idBUTACA");
+//				String fila = rs.getString("fila");
+//				int numero =rs.getInt("numero");
+//				String id_sala=rs.getString("sala_idSALA");
+//				String estado= rs.getString("reservada");
+//			
+//				Butacas butaca= new Butacas(id_butaca, fila, numero,estado,id_sala);
+//				butacas.add(butaca);
+//				
+//			}
+		
+		System.out.println("Reservas actualizadas para la semana :");
+		for(int i=0; i<mis_reservas.size();i++)
+		{
+			System.out.println();
+			System.out.print((i+1)+". ");
+			System.out.print(mis_reservas.get(i).getDia()+"  ");
+			System.out.print(mis_reservas.get(i).getHora()+"  ");
+			System.out.print(mis_reservas.get(i).getPeli()+" (");
+			System.out.print(mis_reservas.get(i).getTipo()+")  Sala ");
+			System.out.print(mis_reservas.get(i).getNum_sala()+" Butaca:  ");
+			System.out.print(mis_reservas.get(i).getFila()+"");
+			System.out.print(mis_reservas.get(i).getNumero()+"");
 
+		}
+
+		
 		
 	}
 	
@@ -1602,7 +1705,19 @@ public static void Modificar_reserva()
 					ps.executeUpdate();
 					ps.close();
 					conn.close();
-									
+					
+					int indice_butaca=-1;
+					
+					for(int i=0;i<butacas.size();i++)
+					{
+						if(butacas.get(i).getCodigo().equals(reserva_modificar.getId_butaca()))
+						{
+							indice_butaca=i;
+						}
+					}
+					
+					butacas.get(indice_butaca).setReservada("no");
+					
 									
 					}catch(ClassNotFoundException ce)
 					{
@@ -1633,113 +1748,58 @@ public static void Modificar_reserva()
 		//ELIJO LA NUEVA BUTACA;
 		
 				System.out.println("A continuación, se muestran las butacas disponibles en la sala ");
-				System.out.println("Aclaración. si= butaca reservada \t no= butaca no reservada/disponible");
+				System.out.println("Aclaración. si= butaca reservada \t no= butaca no reservada/disponible \t ");
 				
-//				sesion_elegida.getId_sala()
-				try
-				{
-					//Registrar JDBC driver
-					Class.forName(JDBC_DRIVER);
-							 
-					// Abrir una Conexion
-					conn = DriverManager.getConnection(DB_URL,USER,PASS);
-							 
-					// Ejecutar una accion en SQL
-					stmt = conn.createStatement();
-					String sql;
-					
-					sql = "SELECT * FROM cinemar2.butaca WHERE cinemar2.butaca.sala_idSALA LIKE '"+ reserva_modificar.getId_sala()+"';";
-					
-					ResultSet rs = stmt.executeQuery(sql);
-					
-					//Extraer datos del ResultSet
-					while(rs.next())
-					{		 
-						//Recibir por tipo de columna BDD USUARIOS
-						String id_butaca=rs.getString("idBUTACA");
-						String fila = rs.getString("fila");
-						int numero =rs.getInt("numero");
-						String id_sala=rs.getString("sala_idSALA");
-						String estado= rs.getString("reservada");
-					
-						Butacas butaca= new Butacas(id_butaca, fila, numero,estado,id_sala);
-						butacas_sala.add(butaca);
-						
-					}
+				
 
-					for (int i=0; i<butacas_sala.size();i++)
+					for (int i=0; i<butacas.size();i++)
 					{
-						if(butacas_sala.get(i).getFila().equals("A")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("A")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("B")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("B")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("C")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("C")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("D")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("D")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("E")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("E")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("F")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("F")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("G")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("G")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("H")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("H")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("I")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("I")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
-						if(butacas_sala.get(i).getFila().equals("J")&&butacas_sala.get(i).getNumero()==1)
+						if(butacas.get(i).getFila().equals("J")&&butacas.get(i).getNumero()==1)
 						{
 							System.out.println();
 						}
 						System.out.print("    \t");
-						System.out.print(butacas_sala.get(i).getFila()+butacas_sala.get(i).getNumero()+" ("+ butacas_sala.get(i).getReservada()+")");
+						System.out.print(butacas.get(i).getFila()+butacas.get(i).getNumero()+" ("+ butacas.get(i).getReservada()+")");
 						
 						
 					}
-					
-					
-					//Entorno de Limpieza
-					rs.close();
-					stmt.close();
-					conn.close();
-					}catch(SQLException se){
-						// Resolver errores para JDBC
-						se.printStackTrace();
-					}catch(Exception e){
-						// Resolver errores para Class.forName
-						e.printStackTrace();
-					}finally{
-						// Bloque finalmente utilizado para cerrar recursos
-						try{
-							if(stmt!=null)
-								stmt.close();
-						}catch(SQLException se2){
-						}// Nada que podamos hacer
-						try{
-							if(conn!=null)
-								conn.close();
-						}catch(SQLException se){
-						 se.printStackTrace();
-						 }
-					} 
+					 
 				
 				System.out.println();
 				System.out.println();
@@ -1757,21 +1817,21 @@ public static void Modificar_reserva()
 					
 				}
 				
-				//GENERO EL CODIGO
+				//GENERO EL CODIGO de la BUTACA
 				String codigo_butaca_elegida= reserva_modificar.getId_sala()+navegador ;
 				
 				int posicion=-1;
 				
-				for (int i=0; i<butacas_sala.size();i++)
+				for (int i=0; i<butacas.size();i++)
 				{
-					if(butacas_sala.get(i).getCodigo().equals(codigo_butaca_elegida))
+					if(butacas.get(i).getCodigo().equals(codigo_butaca_elegida))
 					{
 						posicion=i;
 					}
 					
 				}
 				
-				Butacas butaca_elegida= butacas_sala.get(posicion);
+				Butacas butaca_elegida= butacas.get(posicion);
 				
 				if(butaca_elegida.getReservada().equals("no"))
 				{
@@ -1799,21 +1859,20 @@ public static void Modificar_reserva()
 					}
 					
 					
-					//GENERO EL CODIGO
 					codigo_butaca_elegida= reserva_modificar.getId_sala()+navegador3 ;
 					
 					 posicion=-1;
 					
-					for (int i=0; i<butacas_sala.size();i++)
+					for (int i=0; i<butacas.size();i++)
 					{
-						if(butacas_sala.get(i).getCodigo().equals(codigo_butaca_elegida))
+						if(butacas.get(i).getCodigo().equals(codigo_butaca_elegida))
 						{
 							posicion=i;
 						}
 						
 					}
 					
-					butaca_elegida=butacas_sala.get(posicion);
+					butaca_elegida=butacas.get(posicion);
 					
 					if(butaca_elegida.getReservada().equals("no"))
 					{
@@ -1823,49 +1882,65 @@ public static void Modificar_reserva()
 
 					
 				}	
-			
+	
+				
+				
 				
 		//GENERO EL CODIGO DE RESERVA
 				String fecha_string="";
+				String codigo_reserva="";
+				
 				//AÑADIR A LA BASE DE DATOS "RESERVA"
 				if(reserva_modificar.getDia().equals("Lunes"))
 				{
 					fecha_string="110722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
+					
 				}
 				else if(reserva_modificar.getDia().equals("Martes"))
 				{
 					fecha_string="120722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				else if(reserva_modificar.getDia().equals("Miercoles"))
 				{
 					fecha_string="130722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				else if(reserva_modificar.getDia().equals("Jueves"))
 				{
 					fecha_string="140722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				else if(reserva_modificar.getDia().equals("Viernes"))
 				{
 					fecha_string="150722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				else if(reserva_modificar.getDia().equals("Sabado"))
 				{
 					fecha_string="160722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				else if(reserva_modificar.getDia().equals("Domingo"))
 				{
 					fecha_string="170722";
+					codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
+
 
 				}
 				
-				String codigo_reserva= butaca_elegida.getCodigo()+"-"+fecha_string;
-		
-				System.out.println(codigo_reserva);
 				
 		//ACTUALIZO LA BDD RESERVAS CON EL NUEVO CODIGO DE BUTACA
 		try{
@@ -1877,15 +1952,19 @@ public static void Modificar_reserva()
 			conn = DriverManager.getConnection(DB_URL,USER,PASS);
 						
 			
-			ps=conn.prepareStatement("UPDATE cinemar2.reserva SET butaca_idBUTACA = ? WHERE idRESERVA = ? ;");
-			ps.setString(1,butaca_elegida.getCodigo());
-			ps.setString(2, codigo_reserva);	
+			ps=conn.prepareStatement("UPDATE cinemar2.reserva SET idRESERVA =?, butaca_idBUTACA =? WHERE (numRESERVA =?);");
+			
+			ps.setString(2,butaca_elegida.getCodigo());
+			ps.setString(1, codigo_reserva);	
+			ps.setInt(3, reserva_modificar.getNum_reserva());
 			
 			//Ejecuta
 			ps.executeUpdate();
 			ps.close();
 			conn.close();
-							
+			
+			System.out.print("Se modificó la reserva N° "+ reserva_modificar.getNum_reserva());
+			System.out.println(". El nuevo codigo de reserva es "+codigo_reserva);
 							
 			}catch(ClassNotFoundException ce)
 			{
@@ -1913,60 +1992,7 @@ public static void Modificar_reserva()
 					}
 			} 	
 
-		
-				
-				
-				
-		// ACTUALIZO LA BDD RESERVAS CON EL NUEVO ID DE RESERVA
-		
-		
-		try{
-			
-			//Registrar JDBC driver
-			 Class.forName(JDBC_DRIVER);
-							 
-			//Abrir una Conexion
-			conn = DriverManager.getConnection(DB_URL,USER,PASS);
-						
-			
-			ps=conn.prepareStatement("UPDATE cinemar2.reserva SET idRESERVA = ? WHERE butaca_idBUTACA = ? ;");
-			ps.setString(1, codigo_reserva);	
-			ps.setString(2,butaca_elegida.getCodigo());
-	
-			//Ejecuta
-			ps.executeUpdate();
-			ps.close();
-			conn.close();
-							
-							
-			}catch(ClassNotFoundException ce)
-			{
-				ce.printStackTrace();
-			}catch(SQLException se)
-			{
-				se.printStackTrace();
-							
-			}catch(Exception e){
-				e.printStackTrace();
-							
-						
-				}finally{
-				// Bloque finalmente utilizado para cerrar recursos
-				try{
-					if(ps!=null)
-					ps.close();
-			}catch(SQLException se2){
-			}// Nada que podamos hacer
-				try{
-					if(conn!=null)
-						conn.close();
-			}catch(SQLException se){
-					se.printStackTrace();
-					}
-			} 	
-				
-				
-				
+					
 		//CAMBIAMOS EL ESTADO DE LA NUEVA BUTACA A OCUPADA
 		try{
 			
@@ -1979,14 +2005,26 @@ public static void Modificar_reserva()
 			
 			ps=conn.prepareStatement("UPDATE cinemar2.butaca SET reservada = ? WHERE idBUTACA = ? ;");
 			ps.setString(1,"si");
-			ps.setString(2, codigo_butaca_elegida);	
+			ps.setString(2, butaca_elegida.getCodigo());	
 			
 			//Ejecuta
 			ps.executeUpdate();
 			ps.close();
 			conn.close();
 							
-							
+
+			int indice_butaca=-1;
+			
+			for(int i=0;i<butacas.size();i++)
+			{
+				if(butacas.get(i).getCodigo().equals(reserva_modificar.getId_butaca()))
+				{
+					indice_butaca=i;
+				}
+			}
+			
+			butacas.get(indice_butaca).setReservada("si");	
+			
 			}catch(ClassNotFoundException ce)
 			{
 				ce.printStackTrace();
@@ -2012,11 +2050,35 @@ public static void Modificar_reserva()
 					se.printStackTrace();
 					}
 			} 	
-
+		System.out.println();
 		
+		Reserva_alt reserva_modificada= reserva_modificar;
+		reserva_modificada.setFila(butaca_elegida.getFila());
+		reserva_modificada.setNumero(butaca_elegida.getNumero());
+		reserva_modificada.setId_reserva(codigo_reserva);
+		reserva_modificada.setId_butaca(codigo_butaca_elegida);
+		
+		mis_reservas.set(indice_reserva, reserva_modificada);
+		
+		System.out.println("Sus reservas actualizadas:");
+		for(int i=0; i<mis_reservas.size();i++)
+		{
+			System.out.println();
+			System.out.print((i+1)+". ");
+			System.out.print(mis_reservas.get(i).getDia()+"  ");
+			System.out.print(mis_reservas.get(i).getHora()+"  ");
+			System.out.print(mis_reservas.get(i).getPeli()+" (");
+			System.out.print(mis_reservas.get(i).getTipo()+")  Sala ");
+			System.out.print(mis_reservas.get(i).getNum_sala()+" Butaca:  ");
+			System.out.print(mis_reservas.get(i).getFila()+"");
+			System.out.print(mis_reservas.get(i).getNumero()+"");
+
+		}
 		
 		
 	}
+	
+	Menu_cl();
 }	
 		
 	
@@ -2026,7 +2088,7 @@ public static void Menu_cl()
 
 {
 	
-	
+	System.out.println();
 	System.out.println("¿Que desea hacer?");
 	System.out.println("1. Hacer una reserva. ");
 	System.out.println("2. Modificar una reserva. ");
@@ -2042,7 +2104,7 @@ public static void Menu_cl()
 	//HACER UNA RESERVA
 	if(navegador.equals("1"))
 	{
-		Reservar();
+		Reservar(butacas,reservas);
 	}
 	
 	
@@ -2051,7 +2113,7 @@ public static void Menu_cl()
 	{
 		
 		
-		Modificar_reserva();
+		Modificar_reserva(mis_reservas, butacas);
 		
 		
 	}
@@ -2060,7 +2122,7 @@ public static void Menu_cl()
 	//VER MIS RESERVAS
 	else if(navegador.equals("3"))
 	{
-		Ver_misReservas();
+		Ver_misReservas(mis_reservas);
 		
 		System.out.println();
 		System.out.println();

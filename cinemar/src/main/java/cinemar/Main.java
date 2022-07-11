@@ -134,14 +134,14 @@ public class Main {
 	{
 		
 		boolean inicio=false;
-		@SuppressWarnings("resource")
-		Scanner entrada= new Scanner(System.in);
+	
 		
 		inicio = FuncionesAdmin.Inicio_Sesión();
 		
 		if(inicio)
 		{
 			FuncionesAdmin.Menu_adm();
+			
 			
 		}
 	}

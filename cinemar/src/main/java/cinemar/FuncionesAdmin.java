@@ -1,5 +1,7 @@
 package cinemar;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -7,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -14,14 +17,16 @@ public class FuncionesAdmin {
 	
 	static final String JDBC_DRIVER= "com.mysql.cj.jdbc.Driver";
 	static final String DB_URL= "jdbc:mysql://localhost:3306/cinemar2";
-	
 	//CREDENCIALES
 	static final String USER ="root";
 	static final String PASS = "JuanRoman10!";
 
-	Connection conn = null;
-	Statement stmt = null;
-	PreparedStatement ps= null;
+	static Scanner entrada = new Scanner(System.in);
+	static Connection conn = null;
+	static Statement stmt = null;
+	static PreparedStatement ps= null;
+	
+	static private ArrayList <Sesion_alt> sesiones;
 	
 	public FuncionesAdmin()
 	{
@@ -210,6 +215,84 @@ public static boolean Inicio_Sesión()
 		return inicio;
 	}
 
+public static void Cargar_peliculas(ArrayList <Pelis> peliculas_cinemar)
+{
+
+	//PARTE A-1: CARGO LAS BASE DE DATOS
+		try
+		{
+			//Registrar JDBC driver
+			Class.forName(JDBC_DRIVER);
+					 
+			// Abrir una Conexion
+			conn = DriverManager.getConnection(DB_URL,USER,PASS);
+					 
+			// Ejecutar una accion en SQL
+			stmt = conn.createStatement();
+			String sql;
+			sql = "SELECT * FROM cinemar2.película INNER JOIN cinemar2.clasificación \r\n"
+					+ "ON cinemar2.película.clasificación_idCLASIFICACIÓN=cinemar2.clasificación.idCLASIFICACIÓN;";
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			//Extraer datos del ResultSet
+			while(rs.next())
+			{		 
+				Pelis pelicula = new Pelis();
+				
+				//Recibir por tipo de columna BDD USUARIOS
+				int id_pelicula = rs.getInt("idPELÍCULA");
+				String titulo = rs.getString("título");
+				int duracion= rs.getInt("duración(min)");
+				String genero= rs.getString("genero");
+				String idioma=rs.getString("idioma");
+				String tipo=rs.getString("tipo");
+		
+				
+			
+				pelicula.setId(id_pelicula); pelicula.setTitulo(titulo);pelicula.setDuración(duracion);pelicula.setGenero(genero);
+				pelicula.setIdioma(idioma);pelicula.setTipo(tipo);
+				peliculas_cinemar.add(pelicula);
+			}
+	
+			System.out.println()	;
+			
+				//Entorno de Limpieza
+				rs.close();
+				stmt.close();
+				conn.close();
+				}catch(SQLException se){
+					// Resolver errores para JDBC
+					se.printStackTrace();
+				}catch(Exception e){
+					// Resolver errores para Class.forName
+					e.printStackTrace();
+				}finally{
+					// Bloque finalmente utilizado para cerrar recursos
+					try{
+						if(stmt!=null)
+							stmt.close();
+					}catch(SQLException se2){
+					}// Nada que podamos hacer
+					try{
+						if(conn!=null)
+							conn.close();
+					}catch(SQLException se){
+					 se.printStackTrace();
+					 }
+				} 
+}
+
+
+
+public static void Crear_sesion(ArrayList <Sesion_alt> sesiones_cinemar)
+{
+	
+	
+}
+
+
+
 public static void Menu_adm()
 {
 	System.out.println("¿Qué desea hacer?");
@@ -219,5 +302,32 @@ public static void Menu_adm()
 	System.out.println("4. Modificar descuentos. ");
 	System.out.println("5. Ver todas las reservas por fecha");
 	System.out.println("5. Ver total de reservas para una sesión");
+	
+	@SuppressWarnings("unused")
+	String navegador= entrada.nextLine();
+	
+	Main.Validar_opcion("[1-5]", navegador);
+	System.out.println();
+
+	System.err.println("Le pedimos disculpas. La zona de administradores está en construccion");
+	System.out.println();
+	System.out.println("Presione 1 para ir a la zona de clientes o 2 para salir.");
+	
+	String navegador2= entrada.nextLine();
+	
+	Main.Validar_opcion("[1-2]", navegador2);
+	
+	if (navegador2.equals("1"))
+	{
+		Main.Zona_clientes();
+	}
+	
+	else if (navegador2.equals("2"))
+		System.out.println("HASTA LUEGO!");
+	
+	
 }
+
+
+
 }
